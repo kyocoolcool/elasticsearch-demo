@@ -1,5 +1,6 @@
 package com.kyocoolcool.demo.utils;
 
+import com.kyocoolcool.demo.pojo.Content;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,6 +9,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Chris Chen https://blog.kyocoolcool.com
@@ -16,13 +19,19 @@ import java.net.URL;
  **/
 public class HtmlParseUtil {
     public static void main(String[] args) throws IOException {
+        final List<Content> list = new HtmlParseUtil().parseHtml("java");
+        list.forEach(System.out::println);
+    }
+
+    public List<Content> parseHtml(String keyword) throws IOException {
         //https://search.jd.com/Search?keyword=java
-        String url = "https://search.jd.com/Search?keyword=java";
+        String url = "https://search.jd.com/Search?keyword="+keyword;
         final Document document = Jsoup.parse(new URL(url), 30000);
         Element element=document.getElementById("J_goodsList");
-        System.out.println(element.html());
+//        System.out.println(element.html());
         final Elements elements = element.getElementsByTag("li");
 //        System.out.println(elements);
+        final List<Content> goodList = new ArrayList<>();
         for (Element el : elements) {
             String img = el.getElementsByTag("img").eq(0).attr("data-lazy-img");
 //            if (img.equals("")) {
@@ -30,10 +39,8 @@ public class HtmlParseUtil {
 //            }
             final String price = el.getElementsByClass("p-price").eq(0).text();
             final String title = el.getElementsByClass("p-name").eq(0).text();
-            System.out.println("==========");
-            System.out.println(img);
-            System.out.println(price);
-            System.out.println(title);
+            goodList.add(new Content(title, img, price));
         }
+        return goodList;
     }
 }
