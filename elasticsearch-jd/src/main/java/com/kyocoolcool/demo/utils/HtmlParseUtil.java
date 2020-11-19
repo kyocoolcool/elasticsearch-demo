@@ -9,7 +9,9 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -19,13 +21,13 @@ import java.util.List;
  **/
 public class HtmlParseUtil {
     public static void main(String[] args) throws IOException {
-        final List<Content> list = new HtmlParseUtil().parseHtml("java");
+        final List<Content> list = new HtmlParseUtil().parseHtml("孙子兵法");
         list.forEach(System.out::println);
     }
 
     public List<Content> parseHtml(String keyword) throws IOException {
-        //https://search.jd.com/Search?keyword=java
-        String url = "https://search.jd.com/Search?keyword="+keyword;
+        String message = URLEncoder.encode(keyword,"utf-8");
+        String url = "https://search.jd.com/Search?keyword="+message;
         final Document document = Jsoup.parse(new URL(url), 30000);
         Element element=document.getElementById("J_goodsList");
 //        System.out.println(element.html());

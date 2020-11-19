@@ -36,6 +36,6 @@ public class ContentController {
     public List<Map<String, Object>> search(@PathVariable("keyWord") String keyWord,
                                             @PathVariable("pageNo") int pageNo,
                                             @PathVariable("pageSize") int pageSize) throws IOException {
-        return service.searchPage(keyWord, pageNo, pageSize);
+        return service.searchLikeHightPage(keyWord, pageNo, pageSize);
     }
 }

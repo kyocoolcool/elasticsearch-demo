@@ -11,12 +11,16 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +73,82 @@ public class ContentService {
         final ArrayList<Map<String, Object>> list = new ArrayList<>();
         for (SearchHit documentFields : response.getHits()) {
             list.add(documentFields.getSourceAsMap());
+        }
+        return list;
+    }
+
+    public List<Map<String,Object>> searchHightPage(String keyWord,int pageNo,int pageSize) throws IOException {
+        if (pageNo <= 1) {
+            pageNo = 1;
+        }
+        final SearchRequest request = new SearchRequest("kyocoolcool_jd");
+        final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.from(pageNo);
+        sourceBuilder.size(pageSize);
+        final TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("title", keyWord);
+        sourceBuilder.query(termQueryBuilder);
+        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+        final HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title");
+        highlightBuilder.requireFieldMatch(false);//多個high light顯示
+        highlightBuilder.preTags("<span style='color:red'>");
+        highlightBuilder.postTags("</span>");
+        sourceBuilder.highlighter(highlightBuilder);
+        request.source(sourceBuilder);
+        final SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        final ArrayList<Map<String, Object>> list = new ArrayList<>();
+        for (SearchHit documentFields : response.getHits()) {
+            //獲取high light 字串
+            final Map<String, HighlightField> highlightFields = documentFields.getHighlightFields();
+            final HighlightField title = highlightFields.get("title");
+            final Map<String, Object> sourceAsMap = documentFields.getSourceAsMap();
+            if (title != null) {
+                final Text[] fragments = title.fragments();
+                StringBuilder n_title = new StringBuilder();
+                for (Text fragment : fragments) {
+                    n_title.append(fragment);
+                }
+                sourceAsMap.put("title", n_title.toString());
+            }
+            list.add(sourceAsMap);
+        }
+        return list;
+    }
+
+    public List<Map<String,Object>> searchLikeHightPage(String keyWord,int pageNo,int pageSize) throws IOException {
+        if (pageNo <= 1) {
+            pageNo = 1;
+        }
+        final SearchRequest request = new SearchRequest("kyocoolcool_jd");
+        final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.from(pageNo);
+        sourceBuilder.size(pageSize);
+        final MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("title", keyWord);
+        sourceBuilder.query(matchQueryBuilder);
+        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+        final HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title");
+        highlightBuilder.requireFieldMatch(false);//多個high light顯示
+        highlightBuilder.preTags("<span style='color:red'>");
+        highlightBuilder.postTags("</span>");
+        sourceBuilder.highlighter(highlightBuilder);
+        request.source(sourceBuilder);
+        final SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        final ArrayList<Map<String, Object>> list = new ArrayList<>();
+        for (SearchHit documentFields : response.getHits()) {
+            //獲取high light 字串
+            final Map<String, HighlightField> highlightFields = documentFields.getHighlightFields();
+            final HighlightField title = highlightFields.get("title");
+            final Map<String, Object> sourceAsMap = documentFields.getSourceAsMap();
+            if (title != null) {
+                final Text[] fragments = title.fragments();
+                StringBuilder n_title = new StringBuilder();
+                for (Text fragment : fragments) {
+                    n_title.append(fragment);
+                }
+                sourceAsMap.put("title", n_title.toString());
+            }
+            list.add(sourceAsMap);
         }
         return list;
     }

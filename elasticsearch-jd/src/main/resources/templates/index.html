@@ -90,7 +90,7 @@
                             <!--商品封面-->
                             <div class="productImg-wrap">
                                 <a class="productImg">
-                                    <img :src="resu lt.img">
+                                    <img :src="result.img">
                                 </a>
                             </div>
                             <!--价格-->
@@ -99,7 +99,7 @@
                             </p>
                             <!--标题-->
                             <p class="productTitle">
-                                <a> {{result.title}}</a>
+                                <a v-html="result.title"></a>
                             </p>
                             <!-- 店铺名 -->
                             <div class="productShop">
@@ -129,7 +129,7 @@
         methods:{
             searchKey() {
                 const keyWord = this.keyWord;
-                axios.get("search/java/1/10").then(response=>{
+                axios.get("search/"+keyWord+"/1/20").then(response=>{
                     this.results=response.data;
                 })
             }
